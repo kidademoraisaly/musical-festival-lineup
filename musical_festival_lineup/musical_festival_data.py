@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from musical_festival_lineup.musical_festival_lineup import NUM_STAGES, NUM_SLOTS
 import numpy as np
+import math
 
 ARTISTS_CSV_PATH="data/artists.csv"
 CONFLICTS_CSV_PATH="data/conflicts.csv"
@@ -40,12 +41,14 @@ class MusicalFestivalData:
         return sum(top_conflicts)
     
     def _get_max_worst_conflict(self, num_stages=NUM_STAGES):
+        n_conflicts=math.comb(num_stages,2)
         mask=np.triu(np.ones_like(self.conflicts, dtype=bool), k=1)
         selected_conflicts=self.conflicts[mask]
-        top_conflicts=np.partition(selected_conflicts, -num_stages)[-num_stages:]
+        top_conflicts=np.partition(selected_conflicts, -n_conflicts)[-n_conflicts:]
         return np.sum(top_conflicts)
     
     def get_count_distinct_genres(self, artists_ids_list):
+        self.artists[self.artists.index.isin(artists_ids_list)].head()
         return self.artists[self.artists.index.isin(artists_ids_list)]["genre"].nunique()
 
     def get_sum_popularity(self,artists_ids_list):

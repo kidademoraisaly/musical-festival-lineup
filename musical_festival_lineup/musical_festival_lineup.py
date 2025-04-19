@@ -49,20 +49,48 @@ class MusicalFestivalSolution(Solution):
         return repr_list
 
     def _get_genre_diversity_normalized(self, artists_ids_list):
-        return self.data.get_count_distinct_genres(artists_ids_list)/self.data.max_distinct_genre_per_slot
+        genre_normalized=self.data.get_count_distinct_genres(artists_ids_list)/self.data.max_distinct_genre_per_slot
+        if not(0<=genre_normalized<=1):
+            raise ValueError("The genre normalized should be between 0 and 1")
+        return genre_normalized
+
     
     def _get_conflicts_normalized(self,artists_ids_list):
-        return self.data.get_sum_conflicts(artists_ids_list)/self.data.max_distinct_genre_per_slot
+        conflicts_normalized=self.data.get_sum_conflicts(artists_ids_list)/self.data.max_worst_conflit_per_slot
+        if not(0<=conflicts_normalized<=1):
+            raise ValueError("The conflitcs normalized should be between 0 and 1")
+        return conflicts_normalized
     
     def _get_popularity_normalized(self, artists_ids_list):
-        return self.data.get_sum_popularity(artists_ids_list)/self.data.max_popularity_in_prime_slot
+        populatirity_normalized=self.data.get_sum_popularity(artists_ids_list)/self.data.max_popularity_in_prime_slot
+        if not(0<=populatirity_normalized<=1):
+            raise ValueError("The populatity normalized should be between 0 and 1")
+        return populatirity_normalized
 
-    def fitness(self):
+    def fitness(self, verbose=False):
+        conflicts_normalized=[]
+        genres_normalized=[]
+        sum_popularity=0
         for i in range(NUM_SLOTS):
             slot_list_artists=self._get_slot_repr_list(i)
-            fitness=self._get_conflicts_normalized(slot_list_artists)+self._get_genre_diversity_normalized(slot_list_artists)
+            conflict_normalized=self._get_conflicts_normalized(slot_list_artists)
+            genre_normalized=self._get_genre_diversity_normalized(slot_list_artists)
+            conflicts_normalized.append(conflict_normalized)
+            genres_normalized.append(genre_normalized)
             if i==NUM_SLOTS-1:
-                fitness+=self._get_popularity_normalized(slot_list_artists)
+                sum_popularity=self._get_popularity_normalized(slot_list_artists)
+            if verbose:
+                print("Slot of artists:" , slot_list_artists)
+                print(f"Slot {i}: Conflitcs: {conflict_normalized}, genres: {genre_normalized}, sum_popularity: {sum_popularity}")
+                print(f"Slot {i}: List of  Conflitcs: {conflicts_normalized}, List of genres: {genres_normalized}, Popularity of the prime slot: {sum_popularity}")
+        avg_conflicts= sum(conflicts_normalized) / len(conflicts_normalized)
+        avg_genres=sum(genres_normalized)/len(genres_normalized)
+        fitness= avg_genres+sum_popularity-avg_conflicts
+        if  not (-1 <=fitness<=2):
+            raise ValueError("Fitness should be between -1 and 2 ")
+        if verbose:
+            print(f"Average of conflits: {avg_conflicts}, Average of distinct genres {avg_genres}, and Popularity in prime slot: {sum_popularity}")
+            print(f"Fitness: {fitness}")
         return fitness
     
   
