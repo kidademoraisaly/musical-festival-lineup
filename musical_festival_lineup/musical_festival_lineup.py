@@ -48,14 +48,14 @@ class MusicalFestivalSolution(Solution):
             repr_list.append(art_id)
         return repr_list
 
-    def _get_genre_diversity_normalized(self, slot_list_artists):
-        return self.data.get_count_distinct_genres(slot_list_artists)/self.data.max_distinct_genre_per_slot
+    def _get_genre_diversity_normalized(self, artists_ids_list):
+        return self.data.get_count_distinct_genres(artists_ids_list)/self.data.max_distinct_genre_per_slot
     
-    def _get_conflicts_normalized(self,slot_list_artists):
-        return self.data.get_sum_conflicts(slot_list_artists)/self.data.max_distinct_genre_per_slot
+    def _get_conflicts_normalized(self,artists_ids_list):
+        return self.data.get_sum_conflicts(artists_ids_list)/self.data.max_distinct_genre_per_slot
     
-    def _get_popularity_normalized(self, slot_list_artists):
-        return self.get_sum_popularity(slot_list_artists)/self.data.max_popularity_in_prime_slot
+    def _get_popularity_normalized(self, artists_ids_list):
+        return self.data.get_sum_popularity(artists_ids_list)/self.data.max_popularity_in_prime_slot
 
     def fitness(self):
         for i in range(NUM_SLOTS):
