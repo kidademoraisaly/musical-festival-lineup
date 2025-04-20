@@ -5,6 +5,7 @@ import numpy as np
 import math
 
 ARTISTS_CSV_PATH="data/artists.csv"
+
 CONFLICTS_CSV_PATH="data/conflicts.csv"
 
 
