@@ -12,53 +12,41 @@ REPR_UPPER_BOUND=34
 class MusicalFestivalSolution(Solution):
     def __init__(self, data, repr=None):
         if repr:
-            if isinstance(repr, str):                repr=MusicalFestivalSolution._get_repr_list(repr)  
             MusicalFestivalSolution._validate_repr(repr=repr)                  
         super().__init__(repr=repr)
         self.data=data
     
     @staticmethod
-    def _get_repr_list(repr:str):
-        repr_list=[]
-        for i in range(0,len(repr),REPR_ELEMENTS_LEN):
-            num=int(repr[i:i+REPR_ELEMENTS_LEN])
-            repr_list.append(num)
-        return repr_list
-    
-    @staticmethod
     def _validate_repr(repr):
-        if isinstance(repr,list):
-            if not len(repr)==REPR_NUM_ELEMENTS:
-                raise ValueError(f"Representation should be of size {REPR_NUM_ELEMENTS}")  
-            if len(repr) != len(set(repr)):
-                raise ValueError(f"Representation can not contain duplicates. One artist has to appear once.")  
-            for ar in repr:
-                if not (ar>=REPR_LOWER_BOUND 
-                        and ar<=REPR_UPPER_BOUND):
-                    raise ValueError(f"The Values within a string/list should be between {REPR_LOWER_BOUND} and {REPR_UPPER_BOUND}.\
-                                    If it is a string the values with 1 digit should be precided by 0")            
-        else:
-            raise ValueError("Representation should be a string or list")
-
-    
-     
+        if not isinstance(repr, str):
+            raise ValueError("Representation should be a string")
+        repr_len=REPR_NUM_ELEMENTS*REPR_ELEMENTS_LEN
+        if not len(repr)==repr_len:
+            raise ValueError(f"Representation should be of size {repr_len}")     
+        for i in (0,len(repr),REPR_NUM_ELEMENTS):
+            num=int(repr[i:i+REPR_NUM_ELEMENTS])
+            if not (num>=REPR_LOWER_BOUND 
+                    and num <=REPR_UPPER_BOUND):
+                raise ValueError(f"The Values within a string should be between {REPR_LOWER_BOUND} and {REPR_UPPER_BOUND}.\
+                                  The values with 1 digit should be precided by 0")
     
     def random_initial_representation(self):
         repr_list=random.sample(range(REPR_LOWER_BOUND,
                                        REPR_UPPER_BOUND+1),
                                 REPR_NUM_ELEMENTS
-                                 ) 
-        MusicalFestivalSolution._validate_repr(repr_list)      
-        return repr_list
-
+                                      )
+        return "".join([f"{num:02d}" for num in repr_list])
     
-    def _get_slot_repr_list(self,slot):
-        if 0<=slot<NUM_SLOTS:
-            idx_bound=slot*NUM_STAGES
-            return self.repr[idx_bound:idx_bound+NUM_STAGES]
-        else: 
-            print(f"Slot should be between 0 and {NUM_SLOTS-1}")
 
+    def _get_slot_repr_list(self,slot):
+        idx_bound=NUM_STAGES*REPR_ELEMENTS_LEN
+        idx_start=slot*idx_bound
+        repr_slot=self.repr[idx_start:idx_start+idx_bound]
+        repr_list=[]
+        for i in range(0,len(repr_slot),2):
+            art_id=int(repr_slot[i:i+REPR_ELEMENTS_LEN])
+            repr_list.append(art_id)
+        return repr_list
 
     def _get_genre_diversity_normalized(self, artists_ids_list):
         genre_normalized=self.data.get_count_distinct_genres(artists_ids_list)/self.data.max_distinct_genre_per_slot
@@ -105,3 +93,12 @@ class MusicalFestivalSolution(Solution):
             print(f"Fitness: {fitness}")
         return fitness
     
+  
+            
+           
+            
+               
+    
+            
+
+        
