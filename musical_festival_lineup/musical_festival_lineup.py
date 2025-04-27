@@ -12,7 +12,8 @@ REPR_UPPER_BOUND=34
 class MusicalFestivalSolution(Solution):
     def __init__(self, data, repr=None):
         if repr:
-            if isinstance(repr, str):                repr=MusicalFestivalSolution._get_repr_list(repr)  
+            if isinstance(repr, str):                
+                repr=MusicalFestivalSolution._get_repr_list(repr)  
             MusicalFestivalSolution._validate_repr(repr=repr)                  
         super().__init__(repr=repr)
         self.data=data
@@ -65,8 +66,7 @@ class MusicalFestivalSolution(Solution):
         if not(0<=genre_normalized<=1):
             raise ValueError("The genre normalized should be between 0 and 1")
         return genre_normalized
-
-    
+ 
     def _get_conflicts_normalized(self,artists_ids_list):
         conflicts_normalized=self.data.get_sum_conflicts(artists_ids_list)/self.data.max_worst_conflit_per_slot
         if not(0<=conflicts_normalized<=1):
