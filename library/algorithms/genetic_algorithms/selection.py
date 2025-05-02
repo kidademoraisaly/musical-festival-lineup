@@ -39,14 +39,14 @@ def tournament_selection(population: list[Solution], tournament_size: int, maxim
     def fitness_key(ind):
         return ind.fitness()
     
-    while len_tornament_solution < len(population):
-        for ind in tournament:
+    #while len_tornament_solution < len(population):
+    for ind in tournament:
             # Find the best individual in the tournament
             if maximization:
                 best_individual = max(tournament, key=fitness_key)
             else:
                 best_individual = min(tournament, key=fitness_key)
             tournament_solution.append(best_individual)
-        len_tornament_solution += 1
+    len_tornament_solution += 1
         
-    return deepcopy(tournament_solution)
+    return deepcopy(tournament_solution[0])

@@ -55,8 +55,8 @@ def genetic_algorithm(
         while len(new_population) < len(population):
             # 2.3.1. Choose 2 individuals from P using a selection algorithm
             first_ind = selection_algorithm(population, maximization)
-            second_ind = selection_algorithm(population, maximization)
-
+            second_ind = selection_algorithm(population, maximization
+                                             )
             if verbose:
                 print(f'Selected individuals:\n{first_ind}\n{second_ind}')
 
