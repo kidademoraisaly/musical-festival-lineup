@@ -22,8 +22,8 @@ class MusicalFestivalData:
         artists_df=pd.read_csv(path, index_col=0)
         return artists_df
     
-    def _get_conflicts_processed(self,path):
-        np_conflicts=np.genfromtxt(CONFLICTS_CSV_PATH, delimiter=",", skip_header=1, usecols=range(1,self.artists.shape[0]+1))
+    def _get_conflicts_processed(self, path):
+        np_conflicts = np.genfromtxt(path, delimiter=",", skip_header=1, usecols=range(1, self.artists.shape[0]+1))
         return np_conflicts
     
     def _get_max_distinct_genre(self, num_stages=NUM_STAGES):
@@ -69,8 +69,6 @@ class MusicalFestivalData:
         selected_conflicts=self.conflicts[np.ix_(artists_ids_list,artists_ids_list)]
         mask=np.triu(np.ones_like(selected_conflicts, dtype=bool), k=1)
         return np.sum(selected_conflicts[mask])
-    
-
     
 
 if __name__=="__main__":
