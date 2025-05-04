@@ -29,3 +29,24 @@ def fitness_proportionate_selection(population: list[Solution], maximization: bo
         box_boundary += fitness_values[ind_idx]
         if random_nr <= box_boundary:
             return deepcopy(ind)
+        
+def tournament_selection(population: list[Solution], tournament_size: int, maximization: bool):
+    # Select a random subset of the population
+    tournament = random.sample(population, tournament_size)
+    tournament_solution = [] 
+    len_tornament_solution = len(tournament_solution)
+
+    def fitness_key(ind):
+        return ind.fitness()
+    
+    #while len_tornament_solution < len(population):
+    for ind in tournament:
+            # Find the best individual in the tournament
+            if maximization:
+                best_individual = max(tournament, key=fitness_key)
+            else:
+                best_individual = min(tournament, key=fitness_key)
+            tournament_solution.append(best_individual)
+    len_tornament_solution += 1
+        
+    return deepcopy(tournament_solution[0])
