@@ -50,3 +50,28 @@ def tournament_selection(population: list[Solution], tournament_size: int, maxim
     len_tornament_solution += 1
         
     return deepcopy(tournament_solution[0])
+
+def roulette_wheel_selection(population: list[Solution], maximization: bool) -> Solution:
+    if maximization:
+        fitness_values = []
+        for ind in population:
+            if ind.fitness() < 0:
+                fitness_values.append(0.0000001)
+            else:
+                fitness_values.append(ind.fitness())
+    else:
+        # For minimization
+        fitness_values = [1 / (ind.fitness() + 1e-8) for ind in population]
+
+    total_fitness = sum(fitness_values)
+    selection_point = random.uniform(0, total_fitness)
+
+    cumulative_fitness = 0
+    for ind, fit in zip(population, fitness_values):
+        cumulative_fitness += fit
+        if cumulative_fitness >= selection_point:
+            return deepcopy(ind)
+
+    return deepcopy(population[-1])
+
+
