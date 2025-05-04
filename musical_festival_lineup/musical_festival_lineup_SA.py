@@ -1,6 +1,6 @@
 from library.solution import Solution
 from library.algorithms.simulated_annealing import simulated_annealing
-from musical_festival_lineup.musical_festival_solution import MusicalFestivalSolution, NUM_STAGES, NUM_SLOTS, REPR_ELEMENTS_LEN
+from musical_festival_lineup.musical_festival_lineup import MusicalFestivalSolution, NUM_STAGES, NUM_SLOTS, REPR_ELEMENTS_LEN
 import numpy as np
 from musical_festival_lineup.musical_festival_data import MusicalFestivalData
 from copy import deepcopy
