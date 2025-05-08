@@ -86,7 +86,7 @@ def genetic_algorithm(
                 second_new_ind = offspring2.mutation(mut_prob)
                 new_population.append(second_new_ind)
                 if verbose:
-                    print(f'Second mutated individual: {first_new_ind}')
+                    print(f'Second mutated individual: {second_new_ind}')
         
         # 2.4. Replace P with P'
         population = new_population

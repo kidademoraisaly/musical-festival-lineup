@@ -29,6 +29,7 @@ class MusicalFestivalSolution(Solution):
     @staticmethod
     def _validate_repr(repr):
         if isinstance(repr,list):
+            print(F"Representation {repr}")
             if not len(repr)==REPR_NUM_ELEMENTS:
                 raise ValueError(f"Representation should be of size {REPR_NUM_ELEMENTS}")  
             if len(repr) != len(set(repr)):
