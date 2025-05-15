@@ -70,6 +70,8 @@ class MusicalFestivalData:
         mask=np.triu(np.ones_like(selected_conflicts, dtype=bool), k=1)
         return np.sum(selected_conflicts[mask])
     
+    
+    
 
 if __name__=="__main__":
     print(os.getcwd())

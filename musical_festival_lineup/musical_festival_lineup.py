@@ -80,6 +80,7 @@ class MusicalFestivalSolution(Solution):
             raise ValueError("The populatity normalized should be between 0 and 1")
         return populatirity_normalized
 
+
     def fitness(self, verbose=False):
         conflicts_normalized=[]
         genres_normalized=[]
