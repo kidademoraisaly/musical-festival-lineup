@@ -33,20 +33,43 @@ def fitness_proportionate_selection(population: list[Solution], maximization: bo
 def tournament_selection(population: list[Solution], tournament_size: int, maximization: bool):
     # Select a random subset of the population
     tournament = random.sample(population, tournament_size)
-    tournament_solution = [] 
-    len_tornament_solution = len(tournament_solution)
+
+    def fitness_key(ind):
+        return ind.fitness()
+
+    # Find the best individual in the tournament
+    if maximization:
+        best_individual = max(tournament, key=fitness_key)
+    else:
+        best_individual = min(tournament, key=fitness_key)
+        
+    return deepcopy(best_individual)
+
+def ranking_selection(population: list[Solution], maximization: bool):
 
     def fitness_key(ind):
         return ind.fitness()
     
-    #while len_tornament_solution < len(population):
-    for ind in tournament:
-            # Find the best individual in the tournament
-            if maximization:
-                best_individual = max(tournament, key=fitness_key)
-            else:
-                best_individual = min(tournament, key=fitness_key)
-            tournament_solution.append(best_individual)
-    len_tornament_solution += 1
-        
-    return deepcopy(tournament_solution[0])
+    # Sort the population based on fitness
+    # If maximization is True, sort in descending order
+    if maximization:
+        sort_pop = sorted(population, key=fitness_key, reverse=True)
+    else:
+        # Minimization: Sort in ascending order
+        sort_pop = sorted(population, key=fitness_key, reverse=False)
+
+    N = len(sort_pop)
+    rank = list(range(1, N + 1))
+    if maximization:
+        rank = rank[::-1]
+
+    # Calculate the selection probability for each individual
+    rank_sum = sum(rank)
+    selection_prob = [r / rank_sum for r in rank]
+
+    # Select an individual based on the selection probability
+    selected_ind = random.choices(sort_pop, weights=selection_prob, k=1)[0]
+  
+            
+    return deepcopy(selected_ind)
+
