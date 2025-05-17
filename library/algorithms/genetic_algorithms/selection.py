@@ -50,3 +50,24 @@ def tournament_selection(population: list[Solution], tournament_size: int, maxim
     len_tornament_solution += 1
         
     return deepcopy(tournament_solution[0])
+
+def rank_selection(population: list[Solution], maximization: bool):
+    
+    sorted_population = sorted(population, key=lambda x: x.fitness(), reverse=maximization)
+
+    population_size = len(sorted_population)
+    # Assign ranks to individuals
+    ranks = list(range(1, population_size + 1))
+    
+    total_rank = sum(ranks)
+    selection_prob = [rank / total_rank for rank in ranks]
+
+    # Generate a random number between 0 and 1
+    random_number = random.uniform(0, 1)
+    cumulative_prob = 0
+    for i, prob in enumerate(selection_prob):
+        cumulative_prob += prob
+        if random_number <= cumulative_prob:
+            return deepcopy(sorted_population[i])
+    
+    
