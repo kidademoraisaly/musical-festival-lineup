@@ -1,45 +1,8 @@
 import random
 from copy import deepcopy
+from musical_festival_lineup.mf_lineup import NUM_SLOTS,NUM_STAGES
 
 ERX_SIZE=5
-
-def standard_crossover(parent1_repr, parent2_repr):
-    """
-    Performs standard one-point crossover on two parent representations.
-
-    This operator selects a random crossover point (not at the edges) and 
-    exchanges the tail segments of the two parents to produce two offspring. 
-    The crossover point is the same for both parents and ensures at least one 
-    gene is inherited from each parent before and after the point.
-
-    Parameters:
-        parent1_repr (str or list): The first parent representation.
-        parent2_repr (str or list): The second parent representation.
-            Both parents must have the same length and type.
-
-    Returns:
-        tuple: A pair of offspring representations (offspring1, offspring2), 
-        of the same type as the parents.
-
-    Raises:
-        ValueError: If parent representations are not the same length.
-    """
-
-    if not (isinstance(parent1_repr, list) or isinstance(parent1_repr, str)):
-        raise ValueError("Parent 1 representation must be a list or a string")
-    if not (isinstance(parent2_repr, list) or isinstance(parent2_repr, str)):
-        raise ValueError("Parent 1 representation must be a list or a string")
-    if len(parent1_repr) != len(parent2_repr):
-        raise ValueError("Parent 1 and Parent 2 representations must be the same length")
-
-    # Choose random crossover point
-    xo_point = random.randint(1, len(parent1_repr) - 1)
-
-    offspring1_repr = parent1_repr[:xo_point] + parent2_repr[xo_point:]
-    offspring2_repr = parent2_repr[:xo_point] + parent1_repr[xo_point:]
-
-    return offspring1_repr, offspring2_repr
-
 
 def partial_crossover(parent1_repr, parent2_repr, verbose=False):
     if not (isinstance(parent1_repr, (list,str)) ):
@@ -49,7 +12,8 @@ def partial_crossover(parent1_repr, parent2_repr, verbose=False):
     if verbose: 
         print(f"Parent 1 {parent1_repr}")
         print(f"Parent 2 {parent2_repr}")
-    xo_point_1,xo_point_2=sorted(random.sample(range(1, len(parent1_repr)-1),2))
+    #xo_point_1,xo_point_2=sorted(random.sample(range(1, len(parent1_repr)-1),2))
+    xo_point_1,xo_point_2=sorted(random.sample(range(0, len(parent1_repr)-1),2))
     if verbose:
         print(f"Crossover point1 {xo_point_1} e crossover point2 {xo_point_2}")
 
@@ -97,7 +61,8 @@ def order_crossover(parent1_repr, parent2_repr,verbose=False):
         print(f"Parent 1 {parent1_repr}")
         print(f"Parent 2 {parent2_repr}")
     
-    xo_point_1,xo_point_2=sorted(random.sample(range(len(parent1_repr)),2))
+    #xo_point_1,xo_point_2=sorted(random.sample(range(len(parent1_repr)),2))
+    xo_point_1,xo_point_2=sorted(random.sample(range(0, len(parent1_repr)-1),2))
     if verbose:
         print(f"Cross over point_1 {xo_point_1}, point_2 {xo_point_2}")
     
@@ -125,53 +90,66 @@ def order_crossover(parent1_repr, parent2_repr,verbose=False):
     offspring_2=get_offspring(parent2_repr,parent1_repr)
     return offspring_1,offspring_2
     
+
+def cycle_crossover(parent1_repr: str | list, parent2_repr: str | list, verbose=False):
+    """
+    Performs Cycle Crossover (CX) between two parents
+
+    Cycle Crossover preserves the position of elements by identifying a cycle
+    of indices where the values from each parent will be inherited by each offspring.
+    The remaining indices are filled with values from the other parent, maintaining valid permutations.
+
+    Args:
+        parent1_repr (str or list): The first parent representation.
+        parent2_repr (str or list): The second parent representation.
+            Both parents must have the same length and type.
+
+    Returns:
+        tuple: Two offspring permutations resulting from the crossover.
+    """
+    # Randomly choose a starting index for the cycle
+    initial_random_idx = random.randint(0, len(parent1_repr)-1)
+
+    # Initialize the cycle with the starting index
+    cycle_idxs = [initial_random_idx]
+    current_cycle_idx = initial_random_idx
+
+    # Traverse the cycle by following the mapping from parent2 to parent1
+    while True:
+        value_parent2 = parent2_repr[current_cycle_idx]
+        # Find where this value is in parent1 to get the next index in the cycle
+        next_cycle_idx = parent1_repr.index(value_parent2)
+
+        # Closed the cycle -> Break
+        if next_cycle_idx == initial_random_idx:
+            break
+
+        cycle_idxs.append(next_cycle_idx)
+        current_cycle_idx = next_cycle_idx
     
+    offspring1_repr = []
+    offspring2_repr = []
+    for idx in range(len(parent1_repr)):
+        if idx in cycle_idxs:
+            # Keep values from parent1 in offspring1 in the cycle indexes
+            offspring1_repr.append(parent1_repr[idx])
+            # Keep values from parent2 in offspring2 in the cycle indexes
+            offspring2_repr.append(parent2_repr[idx])
+        else:
+            # Swap elements from parents in non-cycle indexes
+            offspring1_repr.append(parent2_repr[idx])
+            offspring2_repr.append(parent1_repr[idx])
+
+    # To keep the same type as the parents representation
+    if isinstance(parent1_repr, str) and isinstance(parent2_repr, str):
+        offspring1_repr = "".join(offspring1_repr)
+        offspring2_repr = "".join(offspring2_repr)
+
+    return offspring1_repr, offspring2_repr
 
 
-def cycle_crossover(parent1_repr, parent2_repr,verbose=False):
-    if not (isinstance(parent1_repr, (list,str)) ):
-        raise ValueError("Parent 1 representation must be a list or a string")
-    if len(parent1_repr) != len(parent2_repr):
-        raise ValueError("Parent 1 and Parent 2 representations must be the same length") 
-    if verbose: 
-        print(f"Parent 1 {parent1_repr}")
-        print(f"Parent 2 {parent2_repr}")
-    
-    def get_offspring(parent1, parent2):
-        offspring=[None]*len(parent1)
-        idx_of_current=0
-        first_index=idx_of_current
-        while True :
-                offspring[idx_of_current]=parent1[idx_of_current] 
-                if verbose:
-                    print(f"index of current {idx_of_current}")
-                    print(f"gene inserted {parent1[idx_of_current] }")
-                    print(f"Current Offspring  {offspring}") 
-                next_gene=parent2[idx_of_current]
-                idx_of_current=parent1.index(next_gene)     
-                if first_index==idx_of_current:
-                    break          
-        if verbose:
-            print(f"--Offspring  before parent 2 filling {offspring}")
-        offspring=[gene if gene is not None else parent2[i] for i, gene in enumerate(offspring)]       
-        return offspring
-
-    offspring_1=get_offspring(parent1_repr,parent2_repr)
-    if verbose:
-       print(f"--Offspring_1  Final {offspring_1}")
-    offspring_2=get_offspring(parent2_repr,parent1_repr)
-    if verbose:
-       print(f"--Offspring_2  Final {offspring_2}")
-
-    return offspring_1, offspring_2
-
-    
-
-
-
-
-
-def erx_with_grouped_neighbors(parent1_repr, parent2_repr,verbose=False):
+# Edge recombination slotwise adaptation
+def edge_recomb_xo_slotwise(parent1_repr, parent2_repr,verbose=False):
     if not (isinstance(parent1_repr, (list,str)) ):
         raise ValueError("Parent 1 representation must be a list or a string")
     if len(parent1_repr) != len(parent2_repr):
@@ -208,7 +186,8 @@ def erx_with_grouped_neighbors(parent1_repr, parent2_repr,verbose=False):
     
     def build_child(parent):
         off_spring=[]
-        current_gene=parent[0]
+        idx_of_current=random.randint(0, len(parent1_repr)-1)
+        current_gene=parent[idx_of_current]
         current_edge_table=deepcopy(edge_table)
         while len(off_spring)<len(parent):
             if verbose:
@@ -246,12 +225,151 @@ def erx_with_grouped_neighbors(parent1_repr, parent2_repr,verbose=False):
         print(f"Offspring 1 {offspring_1}")
         print(f"Offspring 2 {offspring_2}")
     return offspring_1, offspring_2
-            
 
-    
   
+def edge_recomb_xo(parent1, parent2, verbose=False):
+    if not isinstance(parent1, (list, str)):
+        raise ValueError("Parent 1 must be a list or a string.")
+    if len(parent1) != len(parent2):
+        raise ValueError("Parents must be the same length.")
+    
+    # 1. Build the edge table
+    def build_edge_table(p1, p2):
+        edge_table = {}
+        size = len(p1)
+        for i in range(size):
+            gene = p1[i]
+            neighbors = set()
+            neighbors.update([p1[(i-1)%size], p1[(i+1)%size]])
+            idx_p2 = p2.index(gene)
+            neighbors.update([p2[(idx_p2-1)%size], p2[(idx_p2+1)%size]])
+            edge_table[gene] = neighbors
+        return edge_table
+
+    edge_table = build_edge_table(parent1, parent2)
+    if verbose:
+        print("Initial Edge Table:")
+        for gene, neighbors in edge_table.items():
+            print(f"{gene}: {neighbors}")
+
+    # 2. Build offspring
+    def build_offspring(start_gene):
+        offspring = []
+        current_gene = start_gene
+        current_edge_table = deepcopy(edge_table)
+        while len(offspring) < len(parent1):
+            offspring.append(current_gene)
+            # Remove current gene from all neighbor lists
+            for neighbors in current_edge_table.values():
+                neighbors.discard(current_gene)
+            if verbose:
+                print(f"Added {current_gene}, updated edge table:")
+                for gene, neighbors in current_edge_table.items():
+                    print(f"{gene}: {neighbors}")
+
+            # Get neighbors of current gene
+            neighbors_current = current_edge_table[current_gene]
+            del current_edge_table[current_gene]
+
+            # Choose next gene
+            if neighbors_current:
+                # Select neighbor with fewest neighbors itself (tie-break randomly)
+                min_neighbor_count = min(len(current_edge_table[n]) for n in neighbors_current)
+                candidates = [n for n in neighbors_current if len(current_edge_table[n]) == min_neighbor_count]
+                current_gene = random.choice(candidates)
+            else:
+                # No neighbors left — pick random from remaining genes
+                remaining_genes = list(current_edge_table.keys())
+                if remaining_genes:
+                    current_gene = random.choice(remaining_genes)
+
+        return offspring
+
+    # Pick random starting gene for each offspring
+    offspring1 = build_offspring(random.choice(parent1))
+    offspring2 = build_offspring(random.choice(parent2))
+
+    return offspring1, offspring2
+
     
 
+def partial_crossover_slotwise(parent1_repr, parent2_repr, verbose=False):
+    if not (isinstance(parent1_repr, (list,str)) ):
+        raise ValueError("Parent 1 representation must be a list or a string")
+    if len(parent1_repr) != len(parent2_repr):
+        raise ValueError("Parent 1 and Parent 2 representations must be the same length") 
+    if verbose: 
+        print(f"Parent 1 {parent1_repr}")
+        print(f"Parent 2 {parent2_repr}")
+     # Only pick crossover points at slot boundaries
+    slot_boundaries = [i for i in range(0, len(parent1_repr) + 1, NUM_STAGES)]
+    xo_point_1, xo_point_2 = sorted(random.sample(slot_boundaries, 2))
+
+    if verbose:
+        print(f"Crossover point1 {xo_point_1} e crossover point2 {xo_point_2}")
+
+    segment_1=parent1_repr[xo_point_1:xo_point_2]
+    segment_2=parent2_repr[xo_point_1:xo_point_2]
+
+    maps_1=dict(zip(segment_1,segment_2))
+    maps_2=dict(zip(segment_2,segment_1))
+    
+    if verbose:
+        print(f"OffSpring 1: segment {segment_1} maps {maps_1}")
+        print(f"OffSpring 2: segment {segment_2} maps {maps_2}")
+    
+    def get_maps(segment, source,maps):
+        new_seg=[]
+        for value in source:
+            while value in  segment:
+                value=maps[value]
+            new_seg.append(value)
+        return new_seg
+    
+    head_1=get_maps(segment_1,parent2_repr[:xo_point_1], maps_1)
+    head_2=get_maps(segment_2, parent1_repr[:xo_point_1] , maps_2)
+    tail_1=get_maps(segment_1, parent2_repr[xo_point_2:], maps_1)
+    tail_2=get_maps(segment_2, parent1_repr[xo_point_2:],maps_2)
+  
+    if verbose:
+        print(f"OffSpring 1: head {head_1} | segment {segment_1} | tail  {tail_1}")
+        print(f"OffSpring 2: head {head_2} | segment {segment_2} | tail  {tail_2}")
+    
+    offspring_1=head_1+segment_1+tail_1
+    offspring_2=head_2+segment_2+tail_2
+    
+    assert sorted(parent1_repr)==sorted(offspring_1)
+    assert sorted(parent1_repr)==sorted(offspring_2)
+    
+    return offspring_1,offspring_2
 
 
 
+def rand_choice_crossover(parent1_repr, parent2_repr, verbose=False):
+    """
+    Randomly selects a crossover function (excluding standard_crossover)
+    and applies it to the given parent representations.
+    
+    Parameters:
+        parent1_repr (list or str): First parent.
+        parent2_repr (list or str): Second parent.
+        verbose (bool): If True, prints internal details of the chosen crossover.
+
+    Returns:
+        tuple: A pair of offspring representations.
+    """
+    crossover_funcs = [
+        partial_crossover_slotwise,
+        edge_recomb_xo_slotwise,
+        cycle_crossover,
+    ]
+
+    chosen_crossover = random.choice(crossover_funcs)
+    if verbose:
+        print(f"Chosen crossover: {chosen_crossover.__name__}")
+
+    offspring1, offspring2 = chosen_crossover(parent1_repr, parent2_repr, verbose=verbose)
+    return offspring1, offspring2
+
+
+    

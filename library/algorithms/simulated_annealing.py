@@ -41,10 +41,13 @@ def simulated_annealing(
     current_solution = initial_solution
 
     iter = 1
+    best_fitness_over_iter = []
+
 
     if verbose:
         print(f'Initial solution: {current_solution.repr} with fitness {current_solution.fitness()}')
 
+    
     # 2. Repeat until termination condition
     while iter <= max_iter:
     
@@ -99,11 +102,12 @@ def simulated_annealing(
         if verbose:
             print(f'Decreased C. New value: {C}')
             print('--------------')
-
+        
+        best_fitness_over_iter.append(current_solution.fitness())
         iter += 1
 
     if verbose:
         print(f'Best solution found: {current_solution.repr} with fitness {current_solution.fitness()}')
     
     # 3. Return solution
-    return current_solution
+    return current_solution, best_fitness_over_iter

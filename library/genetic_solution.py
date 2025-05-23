@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
 class GeneticSolution(ABC):
+
     
     @abstractmethod
     def mutation(self):

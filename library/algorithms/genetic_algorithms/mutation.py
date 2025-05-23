@@ -1,56 +1,7 @@
 from copy import deepcopy
+from musical_festival_lineup.mf_lineup import NUM_SLOTS,NUM_STAGES
 import random
 
-def binary_standard_mutation(representation: str | list, mut_prob):
-    """
-    Applies standard binary mutation to a binary string or list representation.
-
-    This function supports both binary strings (e.g., "10101") and binary lists 
-    (e.g., [1, 0, 1, 0, 1]) containing either string characters ("0", "1") or 
-    integers (0, 1). Each gene in the representation is independently flipped 
-    with a given mutation probability, while preserving the original data type 
-    of the genes.
-
-    The function preserves the type of the input representation: if the input is 
-    a string, the output will also be a string; if it's a list, the output will 
-    remain a list.
-
-    Parameters:
-        representation (str or list): The binary representation to mutate.
-        mut_prob (float): The probability of flipping each gene.
-
-    Returns:
-        str or list: A new mutated representation of the same type as the input.
-
-    Raises:
-        ValueError: If the input contains elements other than 0, 1, "0", or "1".
-    """
-
-    # Initialize new representation as a copy of current representation
-    new_representation = deepcopy(representation)
-
-    if random.random() <= mut_prob:
-        # Strings are not mutable. Let's convert temporarily to a list
-        if isinstance(representation, str):
-            new_representation = list(new_representation)
-
-        for char_ix, char in enumerate(representation):
-            if char == "1":
-                new_representation[char_ix] = "0"
-            elif char == 1:
-                new_representation[char_ix] = 0
-            elif char == "0":
-                new_representation[char_ix] = "1"
-            elif char == 0:
-                new_representation[char_ix] = 1
-            else:
-                raise ValueError(f"Invalid character {char}. Can not apply binary standard mutation")
-    
-        # If representation was a string, convert list back to string
-        if isinstance(representation, str):
-            new_representation = "".join(new_representation)
-
-    return new_representation
 
 
 def swap_mutation(representation, mut_prob):
@@ -96,6 +47,26 @@ def swap_mutation(representation, mut_prob):
     
     return new_representation
 
+def swap_mutation_between_slots(representation, mut_prob, slot_size=5):
+    new_representation = deepcopy(representation)
+
+    if random.random() <= mut_prob:
+        num_slots = len(representation) // slot_size
+        idx1 = random.randint(0, len(representation) - 1)
+
+        # Pick another artist from a different slot
+        idx1_slot = idx1 // slot_size
+        possible_idxs = [i for i in range(len(representation)) if i // slot_size != idx1_slot]
+        idx2 = random.choice(possible_idxs)
+
+        new_representation[idx1], new_representation[idx2] = new_representation[idx2], new_representation[idx1]
+
+        if isinstance(representation, str):
+            new_representation = "".join(new_representation)
+
+    return new_representation
+
+
 def insert_mutation(repr, mut_prob,verbose=False):
     if random.random()>mut_prob:
         if verbose:
@@ -116,57 +87,47 @@ def insert_mutation(repr, mut_prob,verbose=False):
     
     return new_repr
 
-def reverse_mutation(repr, mut_prob, verbose=False):
-    if random.random()>mut_prob:
-        if verbose:
-            print("Mutation not happening.")
-        return repr
-    
-    new_repr=deepcopy(repr)
-    
-    if isinstance(new_repr,str):
-        new_repr=list(new_repr)
-    idx_1,idx_2=sorted(random.sample(range(0,len(new_repr)-1),2))
-    to_reverse=new_repr[idx_1:idx_2]
-    new_repr[idx_1:idx_2]=reversed(to_reverse)
+def inversion_mutation(representation: str | list, mut_prob):
+    """
+    Applies inversion mutation to a representation.
 
-    if verbose:
-        print("Mutation happened.")
-        print(f"Random indexes. Reverse from idx: {idx_1} to {idx_2}")
-        print(f"List to reverse {to_reverse}")
-        print(f"Reversed {new_repr[idx_1:idx_2]}")      
-    if isinstance(new_repr,str):
-        new_repr="".join(new_repr)
-    if verbose:
-        print(f"New Repr {new_repr}")     
-    return new_repr
+    Inversion mutation selects two random indices and reverses the 
+    subsequence between them, with a certain probability.
+
+    Parameters:
+    ----------
+    representation : str or list
+        The individual to mutate. Should represent a valid permutation.
+    mut_prob : float
+        Probability of applying the mutation (between 0 and 1).
+
+    Returns:
+    -------
+    str or list
+        A new individual with the mutated representation (if mutation occurs),
+        or a copy of the original.
+    """
+    if random.random() <= mut_prob:
+        # Select two distinct indices
+        first_idx = random.randint(0, len(representation)-1)
+        second_idx = first_idx
+        # We want to get two indexes that are at least 2 genes away 
+        while abs(second_idx-first_idx) <= 1 :
+            second_idx = random.randint(0, len(representation)-1)
     
-def rand_choice_mutation(repr, mut_prob, verbose=False):
-    if random.random()>mut_prob:
-        if verbose:
-            print("Mutation not happening.")
-        return repr
-    new_repr=deepcopy(repr)
-    if isinstance(new_repr,list):
-        new_repr=list(new_repr)
-    mut_type=random.choice(["swap","insert","reverse"])
-    if verbose:
-        print("Mutation happened.")
-        print(f"Selected mutation is {mut_type}")
-    if mut_type=="swap":
-        new_repr=swap_mutation(new_repr, mut_prob=1)
-    elif mut_type=="insert":
-        new_repr=insert_mutation(new_repr,mut_prob=1,verbose=verbose)
-    elif mut_type=="reverse":
-        new_repr=reverse_mutation(new_repr,mut_prob=1,verbose=verbose)
+        # Ensure first_idx < second_idx
+        if first_idx > second_idx:
+            first_idx, second_idx = second_idx, first_idx
 
-    if isinstance(new_repr,str):
-        new_repr="".join(new_repr)     
-    if verbose:
-        print(f"The new representation after mutation is {new_repr}")
-    return new_repr
+        # Reverse between first and second index
+        reversed_subsequence = list(reversed(representation[first_idx:second_idx]))
+        # Convert back to string if original representation is a string
+        if isinstance(representation, str):
+            reversed_subsequence = "".join(reversed_subsequence)
+
+        # Keep everything from second index (excluding it) until the end
+        new_representation = representation[:first_idx] + reversed_subsequence + representation[second_idx:]
+        return new_representation
+    else:
+        return deepcopy(representation)
     
-    
-
-
-
